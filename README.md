@@ -18,10 +18,51 @@ src/shell_emulator/
     shell.py      цикл REPL, приглашение, обработка ошибок
     parser.py     разбор строки на команду и аргументы
     commands.py   встроенные команды
+    config.py     параметры командной строки
+    script.py     выполнение стартового скрипта
 tests/            модульные тесты (unittest)
+examples/         стартовые скрипты эмулятора
+scripts/          скрипты ОС для проверки параметров запуска
 run.bat, run.sh   запуск эмулятора
 test.bat, test.sh запуск тестов
 ```
+
+## Параметры командной строки
+
+```
+run.bat [--vfs PATH] [--script PATH]
+```
+
+| Параметр        | Описание                                        |
+|-----------------|-------------------------------------------------|
+| `--vfs PATH`    | путь к физическому расположению VFS             |
+| `--script PATH` | путь к стартовому скрипту с командами эмулятора |
+| `-h`, `--help`  | справка по параметрам                           |
+
+При запуске эмулятор выводит все параметры (отладочный вывод):
+
+```
+[debug] emulator parameters:
+[debug]   vfs_path    = vfs_samples\minimal
+[debug]   script_path = <not set>
+```
+
+Неизвестный параметр или параметр без значения — ошибка, код возврата 2.
+
+## Стартовый скрипт
+
+Текстовый файл в UTF-8, по одной команде эмулятора в строке.
+
+- Команды выполняются последовательно. Каждая команда выводится после
+  приглашения, затем её результат — как в диалоге с пользователем.
+- Пустые строки и строки, начинающиеся с `#`, пропускаются.
+- Ошибочная строка не прерывает скрипт: выводится сообщение об ошибке и
+  `файл:строка: line skipped (exit status N)`, выполнение продолжается.
+- Команда `exit` в скрипте завершает эмулятор.
+- Если скрипт не найден или не читается, выводится
+  `shell-emulator: cannot run script: ...` и эмулятор завершается с кодом 1.
+- Если скрипт закончился без `exit`, эмулятор переходит в интерактивный
+  режим.
 
 ## Функции
 
@@ -82,6 +123,17 @@ test.bat
 ./test.sh
 ```
 
+Проверка параметров запуска скриптами ОС (`scripts/`, есть версии
+`.bat` и `.sh`):
+
+| Скрипт           | Что проверяет                                       |
+|------------------|-----------------------------------------------------|
+| `test_defaults`  | запуск без параметров                               |
+| `test_vfs`       | только `--vfs`                                      |
+| `test_script`    | только `--script examples/stage2.txt`               |
+| `test_all`       | `--vfs` и `--script` вместе                         |
+| `test_errors`    | несуществующий скрипт, неизвестный параметр, параметр без значения |
+
 ## Пример использования
 
 ```
@@ -102,10 +154,29 @@ exit: abc: numeric argument required
 bozhi@Visender:~$ exit 7
 ```
 
+Запуск со стартовым скриптом (`scripts\test_script.bat`):
+
+```
+[debug] emulator parameters:
+[debug]   vfs_path    = <not set>
+[debug]   script_path = examples\stage2.txt
+bozhi@Visender:~$ ls
+ls: args=[]
+bozhi@Visender:~$ unknown_cmd --flag
+unknown_cmd: command not found
+examples\stage2.txt:9: line skipped (exit status 127)
+bozhi@Visender:~$ cd a b
+cd: too many arguments
+examples\stage2.txt:10: line skipped (exit status 1)
+bozhi@Visender:~$ cd 'folder with spaces'
+cd: args=['folder with spaces']
+bozhi@Visender:~$ exit
+```
+
 ## Этапы работы
 
 - [x] Этап 1. REPL
-- [ ] Этап 2. Конфигурация
+- [x] Этап 2. Конфигурация
 - [ ] Этап 3. VFS
 - [ ] Этап 4. Основные команды
 - [ ] Этап 5. Дополнительные команды
