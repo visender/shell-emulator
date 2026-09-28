@@ -11,7 +11,7 @@ class ParseError(Exception):
     """Синтаксическая ошибка во введённой строке."""
 
 
-class _Lexer:
+class Lexer:
     """Посимвольный разбор строки по правилам, близким к sh.
 
     Пробелы разделяют аргументы. Одинарные кавычки сохраняют текст
@@ -96,7 +96,7 @@ def split_line(line):
     :return: список токенов
     :raises ParseError: если кавычка не закрыта
     """
-    return _Lexer(line).tokenize()
+    return Lexer(line).tokenize()
 
 
 def parse_command(line):
