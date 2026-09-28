@@ -1,0 +1,16 @@
+# Стартовый скрипт этапа 2.
+# Строки, начинающиеся с #, и пустые строки пропускаются.
+
+ls
+ls -l "My Documents" 'single quoted'
+cd /home/user
+
+# Ошибочные строки сообщают об ошибке и пропускаются
+unknown_cmd --flag
+cd a b
+ls "unclosed
+exit abc
+
+# После ошибок выполнение продолжается
+cd 'folder with spaces'
+exit
