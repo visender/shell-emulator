@@ -21,6 +21,7 @@ def main(argv=None):
     shell = Shell()
     for line in format_config(config):
         shell.stdout.write(line + "\n")
+    shell.stdout.flush()
     if config.script_path:
         try:
             run_script(shell, config.script_path)
