@@ -100,14 +100,23 @@ class Shell:
             return None
         return line.rstrip("\r\n").lstrip(BOM)
 
+    def echo_input(self, line):
+        """Вывести приглашение и строку, будто её ввёл пользователь."""
+        self._write(self.prompt() + line)
+
+    def report(self, message):
+        """Вывести сообщение об ошибке в поток ошибок."""
+        self.stderr.write(f"{message}\n")
+        self.stderr.flush()
+
     def _write(self, text):
         """Вывести результат команды, если он не пустой."""
         if text:
             self.stdout.write(text + "\n")
+            self.stdout.flush()
 
     def _fail(self, message, status):
         """Сообщить об ошибке и запомнить код возврата."""
-        self.stderr.write(f"{message}\n")
-        self.stderr.flush()
+        self.report(message)
         self.last_status = status
         return status
